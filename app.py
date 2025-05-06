@@ -9,7 +9,7 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.efficientnet import preprocess_input as eff_preprocess
 from huggingface_hub import hf_hub_download
-
+from scipy.ndimage import zoom  
 
 # ----------------------------
 # Prediction Configs
@@ -69,24 +69,39 @@ with tabs[0]:
     """)
 
 with tabs[1]:
-    st.header("📤 Upload Brain MRI File (.nii)")
-    file = st.file_uploader("Upload a NIfTI file (.nii or .nii.gz)", type=["nii", "gz"])
+    st.header("📤 Upload Brain MRI File (.nii/.nii.gz)")
+    file = st.file_uploader("Upload a NIfTI file", type=["nii", "gz"])
 
     if file:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".nii") as tmp_file:
             tmp_file.write(file.read())
             nii_path = tmp_file.name
 
+        # Load and downsample
         img = nib.load(nii_path)
         data = img.get_fdata()
-        nb_slices = data.shape[2]
-        r, c = data.shape[0], data.shape[1]
+        data = zoom(data, (0.5, 0.5, 0.5))  # Reduce memory usage
 
+        # Select view
+        view_mode = st.selectbox("Choose View Mode", ["Axial", "Coronal", "Sagittal"])
+
+        # Extract slices based on view mode
+        if view_mode == "Axial":
+            slices = [np.flipud(data[:, :, k].T) for k in range(data.shape[2])]
+        elif view_mode == "Coronal":
+            slices = [np.flipud(data[:, k, :].T) for k in range(data.shape[1])]
+        else:  # Sagittal
+            slices = [np.flipud(data[k, :, :].T) for k in range(data.shape[0])]
+
+        r, c = slices[0].shape
+        nb_slices = len(slices)
+
+        # Build Plotly animation
         fig = go.Figure(frames=[
             go.Frame(
                 data=go.Surface(
                     z=k * np.ones((r, c)),
-                    surfacecolor=np.flipud(data[:, :, k].T),
+                    surfacecolor=slices[k],
                     cmin=0,
                     cmax=data.max()
                 ),
@@ -94,15 +109,17 @@ with tabs[1]:
             ) for k in range(nb_slices)
         ])
 
+        # Initial slice
         fig.add_trace(go.Surface(
             z=0 * np.ones((r, c)),
-            surfacecolor=np.flipud(data[:, :, 0].T),
+            surfacecolor=slices[0],
             colorscale='Gray',
             cmin=0,
             cmax=data.max(),
             colorbar=dict(thickness=20, ticklen=4)
         ))
 
+        # Slider & buttons
         def frame_args(duration):
             return {
                 "frame": {"duration": duration},
@@ -123,7 +140,7 @@ with tabs[1]:
         }]
 
         fig.update_layout(
-            title='🧠 Axial Brain MRI View (Interactive)',
+            title=f"🧠 {view_mode} Brain MRI View (Interactive)",
             width=700,
             height=700,
             scene=dict(
