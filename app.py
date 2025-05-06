@@ -86,9 +86,9 @@ with tabs[1]:
         view_mode = st.selectbox("Choose View Mode", ["Axial", "Coronal", "Sagittal"])
 
         # Extract slices based on view mode
-        if view_mode == "Axial":
+        if view_mode == "Coronal":
             slices = [np.flipud(data[:, :, k].T) for k in range(data.shape[2])]
-        elif view_mode == "Coronal":
+        elif view_mode == "Sagittal":
             slices = [np.flipud(data[:, k, :].T) for k in range(data.shape[1])]
         else:  # Sagittal
             slices = [np.flipud(data[k, :, :].T) for k in range(data.shape[0])]
