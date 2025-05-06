@@ -178,19 +178,33 @@ with tabs[2]:
 
         x = load_and_preprocess(temp_path)
 
-        models, names = [], []
-        model_choice == "EfficientNetB3":
-        try:
-            model_path = hf_hub_download(
-                repo_id="Saiarun/b3",
-                filename="EfficientNetB3_best.keras",
-                cache_dir=os.path.join(os.getcwd(), "hf_cache")  # local folder for caching on Streamlit
-            )
-            models = [load_model(model_path, compile=False)]
-            names = ["EfficientNetB3"]
-        except Exception as e:
-            st.error(f"❌ Failed to load EfficientNetB3 model from Hugging Face:\n{str(e)}")
-            st.stop()
+        def load_b3_model():
+            try:
+                model_path = hf_hub_download(
+                    repo_id="Saiarun/b3",
+                    filename="EfficientNetB3_best.keras",
+                    cache_dir=os.path.join(os.getcwd(), "hf_cache")
+                )
+                return load_model(model_path, compile=False)
+            except Exception as e:
+                st.error(f"Failed to load EfficientNetB3 model: {e}")
+                st.stop()
+
+        model = load_b3_model()
+
+        # models, names = [], []
+        # model_choice == "EfficientNetB3":
+        # try:
+        #     model_path = hf_hub_download(
+        #         repo_id="Saiarun/b3",
+        #         filename="EfficientNetB3_best.keras",
+        #         cache_dir=os.path.join(os.getcwd(), "hf_cache")  # local folder for caching on Streamlit
+        #     )
+        #     models = [load_model(model_path, compile=False)]
+        #     names = ["EfficientNetB3"]
+        # except Exception as e:
+        #     st.error(f"❌ Failed to load EfficientNetB3 model from Hugging Face:\n{str(e)}")
+            # st.stop()
         # elif model_choice == "DenseNet169":
         #     models = [load_model('./AugmentedAlzheimerDataset/DenseNet169_best.keras', compile=False)]
         #     names = ["DenseNet169"]
@@ -201,7 +215,7 @@ with tabs[2]:
         #     ]
         #     names = ["EfficientNetB3", "DenseNet169"]
 
-        probs_stack = [m.predict(x, verbose=0)[0] for m in models]
+        probs_stack = model.predict(x, verbose=0)[0]
         probs = np.mean(probs_stack, axis=0)
         pred_idx = int(np.argmax(probs))
         pred_label = idx_to_label[pred_idx]
