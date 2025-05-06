@@ -179,11 +179,18 @@ with tabs[2]:
         x = load_and_preprocess(temp_path)
 
         models, names = [], []
-        if model_choice == "EfficientNetB3":
-            model_path = hf_hub_download(repo_id="Saiarun/b3", filename="EfficientNetB3_best.keras")
+        model_choice == "EfficientNetB3":
+        try:
+            model_path = hf_hub_download(
+                repo_id="Saiarun/b3",
+                filename="EfficientNetB3_best.keras",
+                cache_dir=os.path.join(os.getcwd(), "hf_cache")  # local folder for caching on Streamlit
+            )
             models = [load_model(model_path, compile=False)]
-
             names = ["EfficientNetB3"]
+        except Exception as e:
+            st.error(f"❌ Failed to load EfficientNetB3 model from Hugging Face:\n{str(e)}")
+            st.stop()
         # elif model_choice == "DenseNet169":
         #     models = [load_model('./AugmentedAlzheimerDataset/DenseNet169_best.keras', compile=False)]
         #     names = ["DenseNet169"]
