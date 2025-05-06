@@ -239,7 +239,7 @@ with tabs[3]:
     st.image("images/violin_ABETA42.png", caption="Aβ42 levels are often significantly lower in amyloid-positive individuals due to deposition of this peptide in plaques, making it a key diagnostic indicator.", width=600)
     st.image("images/violin_ABETA42_40.png", caption="This ratio is a more reliable predictor than Aβ42 alone. A clear decrease is observable in amyloid-positive individuals, supporting its use in classification.", width=600)
     st.image("images/violin_GFAP_Q.png", caption="Elevated GFAP is associated with astrocytic activation, often seen in early Alzheimer's pathology. The spread here suggests higher levels in amyloid-positive cases.", width=600)
-    st.image("Aimages/violin_LOG_PTAU.png", caption="Higher phosphorylated tau levels are strongly linked with amyloid pathology and neurodegeneration. Amyloid-positive subjects show slightly elevated levels.", width=600)
+    st.image("images/violin_LOG_PTAU.png", caption="Higher phosphorylated tau levels are strongly linked with amyloid pathology and neurodegeneration. Amyloid-positive subjects show slightly elevated levels.", width=600)
     st.image("images/violin_LOG_TAU.png", caption="Total tau is a general marker of neuronal injury. While not specific to amyloid, elevated values are more common in positive cases.", width=600)
     st.image("images/violin_NfL_Q.png", caption="A marker of neurodegeneration. This plot shows a rightward tail in amyloid-positive individuals, suggesting higher neuronal injury.", width=600)
     st.image("images/violin_pT217_F.png", caption="This highly specific biomarker for Alzheimer's shows increased levels in amyloid-positive individuals, supporting its diagnostic value.", width=600)
