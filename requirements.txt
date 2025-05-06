@@ -3,3 +3,4 @@ nibabel
 numpy
 opencv-python
 tensorflow
+huggingface_hub
