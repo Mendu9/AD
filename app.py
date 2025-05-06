@@ -162,7 +162,10 @@ with tabs[1]:
         )
 
         st.plotly_chart(fig)
-
+st.markdown("""
+    
+    You can download the .nii from [data](https://drive.google.com/drive/folders/1wEDtBy0IE_TjWyzNXLBlc-uu-bxMkUdQ?usp=sharing)
+    """)
 # MRI
 with tabs[2]:
     st.header("🧪 Predict Alzheimer's Stage from MRI Image")
@@ -173,7 +176,7 @@ with tabs[2]:
     - 🟠 LMCI: Late Mild Cognitive Impairment
     - 🔴 AD: Alzheimer’s Disease
     
-    The model is trained on clinical datasets and uses deep neural networks (EfficientNet, DenseNet) to provide predictions with confidence levels.
+    The model is trained on clinical datasets and uses deep neural network (EfficientNet) to provide predictions with confidence levels.
     
     You can download the test images in the zip file present in the [data](https://drive.google.com/drive/folders/1Hv4hVk4WX5ZrVINIYvdiDY_Q9R_n4TeV?usp=sharing)
     """)
