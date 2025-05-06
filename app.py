@@ -162,10 +162,10 @@ with tabs[1]:
         )
 
         st.plotly_chart(fig)
-st.markdown("""
-    
-    You can download the .nii from [data](https://drive.google.com/drive/folders/1wEDtBy0IE_TjWyzNXLBlc-uu-bxMkUdQ?usp=sharing)
-    """)
+    st.markdown("""
+        
+        You can download the .nii from [data](https://drive.google.com/drive/folders/1wEDtBy0IE_TjWyzNXLBlc-uu-bxMkUdQ?usp=sharing)
+        """)
 # MRI
 with tabs[2]:
     st.header("🧪 Predict Alzheimer's Stage from MRI Image")
