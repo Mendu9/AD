@@ -8,6 +8,8 @@ import cv2
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.efficientnet import preprocess_input as eff_preprocess
+from huggingface_hub import hf_hub_download
+
 
 # ----------------------------
 # Prediction Configs
@@ -49,7 +51,7 @@ with tabs[0]:
     - Loss of synapses and neurons
     """)
 
-    st.image("AugmentedAlzheimerDataset/normalVsAD.jpg", caption="Comparison of Healthy Brain and Alzheimer's Disease Brain",width=500)
+    st.image("images/normalVsAD.jpg", caption="Comparison of Healthy Brain and Alzheimer's Disease Brain",width=500)
 
     st.markdown("""
     ### 🧪 What This App Offers
@@ -160,7 +162,7 @@ with tabs[2]:
     """)
 
     img_file = st.file_uploader("Upload a 2D MRI Image", type=["png", "jpg", "jpeg"])
-    model_choice = st.selectbox("Choose a Model", ["EfficientNetB3", "DenseNet169", "Ensemble"])
+    model_choice = st.selectbox("Model Available", ["EfficientNetB3"])
 
     if img_file and st.button("Predict"):
         temp_path = os.path.join(tempfile.gettempdir(), img_file.name)
@@ -178,8 +180,19 @@ with tabs[2]:
 
         models, names = [], []
         if model_choice == "EfficientNetB3":
-            models = [load_model('./AugmentedAlzheimerDataset/EfficientNetB3_best.keras', compile=False)]
+            model_path = hf_hub_download(repo_id="Saiarun/b3", filename="EfficientNetB3_best.keras")
+            models = [load_model(model_path, compile=False)]
+
             names = ["EfficientNetB3"]
+        # elif model_choice == "DenseNet169":
+        #     models = [load_model('./AugmentedAlzheimerDataset/DenseNet169_best.keras', compile=False)]
+        #     names = ["DenseNet169"]
+        # else:
+        #     models = [
+        #         load_model('./AugmentedAlzheimerDataset/EfficientNetB3_best.keras', compile=False),
+        #         load_model('./AugmentedAlzheimerDataset/DenseNet169_best.keras', compile=False)
+        #     ]
+        #     names = ["EfficientNetB3", "DenseNet169"]
 
         probs_stack = [m.predict(x, verbose=0)[0] for m in models]
         probs = np.mean(probs_stack, axis=0)
@@ -221,14 +234,14 @@ with tabs[3]:
     The visualizations below show how these features distribute with respect to **Amyloid status (positive = 1 / negative = 0)**.
     """)
 
-    st.image("AugmentedAlzheimerDataset/adni/violin_AB42_AB40_F.png", caption="A lower Aβ42/Aβ40 ratio is typically associated with amyloid positivity, indicating abnormal amyloid accumulation. This plot shows that positive individuals tend to have reduced ratios", width=600)
-    st.image("AugmentedAlzheimerDataset/adni/violin_ABETA40.png", caption="ABETA40 levels remain relatively stable across groups, making it a normalization factor. However, minor spread differences may reflect biological variability.", width=600)
-    st.image("AugmentedAlzheimerDataset/adni/violin_ABETA42.png", caption="Aβ42 levels are often significantly lower in amyloid-positive individuals due to deposition of this peptide in plaques, making it a key diagnostic indicator.", width=600)
-    st.image("AugmentedAlzheimerDataset/adni/violin_ABETA42_40.png", caption="This ratio is a more reliable predictor than Aβ42 alone. A clear decrease is observable in amyloid-positive individuals, supporting its use in classification.", width=600)
-    st.image("AugmentedAlzheimerDataset/adni/violin_GFAP_Q.png", caption="Elevated GFAP is associated with astrocytic activation, often seen in early Alzheimer's pathology. The spread here suggests higher levels in amyloid-positive cases.", width=600)
-    st.image("AugmentedAlzheimerDataset/adni/violin_LOG_PTAU.png", caption="Higher phosphorylated tau levels are strongly linked with amyloid pathology and neurodegeneration. Amyloid-positive subjects show slightly elevated levels.", width=600)
-    st.image("AugmentedAlzheimerDataset/adni/violin_LOG_TAU.png", caption="Total tau is a general marker of neuronal injury. While not specific to amyloid, elevated values are more common in positive cases.", width=600)
-    st.image("AugmentedAlzheimerDataset/adni/violin_NfL_Q.png", caption="A marker of neurodegeneration. This plot shows a rightward tail in amyloid-positive individuals, suggesting higher neuronal injury.", width=600)
-    st.image("AugmentedAlzheimerDataset/adni/violin_pT217_F.png", caption="This highly specific biomarker for Alzheimer's shows increased levels in amyloid-positive individuals, supporting its diagnostic value.", width=600)
+    st.image("images/violin_AB42_AB40_F.png", caption="A lower Aβ42/Aβ40 ratio is typically associated with amyloid positivity, indicating abnormal amyloid accumulation. This plot shows that positive individuals tend to have reduced ratios", width=600)
+    st.image("images/violin_ABETA40.png", caption="ABETA40 levels remain relatively stable across groups, making it a normalization factor. However, minor spread differences may reflect biological variability.", width=600)
+    st.image("images/violin_ABETA42.png", caption="Aβ42 levels are often significantly lower in amyloid-positive individuals due to deposition of this peptide in plaques, making it a key diagnostic indicator.", width=600)
+    st.image("images/violin_ABETA42_40.png", caption="This ratio is a more reliable predictor than Aβ42 alone. A clear decrease is observable in amyloid-positive individuals, supporting its use in classification.", width=600)
+    st.image("images/violin_GFAP_Q.png", caption="Elevated GFAP is associated with astrocytic activation, often seen in early Alzheimer's pathology. The spread here suggests higher levels in amyloid-positive cases.", width=600)
+    st.image("Aimages/violin_LOG_PTAU.png", caption="Higher phosphorylated tau levels are strongly linked with amyloid pathology and neurodegeneration. Amyloid-positive subjects show slightly elevated levels.", width=600)
+    st.image("images/violin_LOG_TAU.png", caption="Total tau is a general marker of neuronal injury. While not specific to amyloid, elevated values are more common in positive cases.", width=600)
+    st.image("images/violin_NfL_Q.png", caption="A marker of neurodegeneration. This plot shows a rightward tail in amyloid-positive individuals, suggesting higher neuronal injury.", width=600)
+    st.image("images/violin_pT217_F.png", caption="This highly specific biomarker for Alzheimer's shows increased levels in amyloid-positive individuals, supporting its diagnostic value.", width=600)
 
     st.info("🧪 This section is under development. Further statistical tests and modeling will follow.")
