@@ -180,15 +180,6 @@ with tabs[2]:
         if model_choice == "EfficientNetB3":
             models = [load_model('./AugmentedAlzheimerDataset/EfficientNetB3_best.keras', compile=False)]
             names = ["EfficientNetB3"]
-        elif model_choice == "DenseNet169":
-            models = [load_model('./AugmentedAlzheimerDataset/DenseNet169_best.keras', compile=False)]
-            names = ["DenseNet169"]
-        else:
-            models = [
-                load_model('./AugmentedAlzheimerDataset/EfficientNetB3_best.keras', compile=False),
-                load_model('./AugmentedAlzheimerDataset/DenseNet169_best.keras', compile=False)
-            ]
-            names = ["EfficientNetB3", "DenseNet169"]
 
         probs_stack = [m.predict(x, verbose=0)[0] for m in models]
         probs = np.mean(probs_stack, axis=0)
