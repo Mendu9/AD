@@ -215,8 +215,7 @@ with tabs[2]:
         #     ]
         #     names = ["EfficientNetB3", "DenseNet169"]
 
-        probs_stack = model.predict(x, verbose=0)[0]
-        probs = np.mean(probs_stack, axis=0)
+        probs = model.predict(x, verbose=0)[0]
         pred_idx = int(np.argmax(probs))
         pred_label = idx_to_label[pred_idx]
         human_readable = label_mapping[pred_label]
