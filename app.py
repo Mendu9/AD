@@ -23,10 +23,11 @@ label_mapping = {
 }
 idx_to_label = dict(enumerate(sorted(label_mapping)))
 
-st.set_page_config(page_title="Alzheimer's MRI Viewer", layout="wide")
+st.set_page_config(page_title="Alzheimer detection", layout="wide")
 st.title("🧠 Alzheimer's Detection and Brain MRI Explorer")
 
 tabs = st.tabs(["🏠 Home", "🧠 MRI Viewer", "🧪 2D MRI Prediction", "🧬 Biomarker Prediction"])
+
 
 with tabs[0]:
     st.markdown("""
@@ -65,8 +66,9 @@ with tabs[0]:
     [Glial Fibrillary Acidic Protein (GFAP) in Plasma vs. CSF](https://pmc.ncbi.nlm.nih.gov/articles/PMC8524356/)
 
     ---
-    💡 *This is a research-driven project combining deep learning with interactive MRI exploration to support early detection and awareness of Alzheimer’s disease.*
+    💡 *This is a project combining deep learning with interactive MRI exploration to support early detection and awareness of Alzheimer’s disease.*
     """)
+    st.markdown("Developed by **Sai Arun Mendu**", unsafe_allow_html=True)
 
 with tabs[1]:
     st.header("📤 Upload Brain MRI File (.nii/.nii.gz)")
