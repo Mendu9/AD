@@ -11,9 +11,54 @@ from tensorflow.keras.applications.efficientnet import preprocess_input as eff_p
 from huggingface_hub import hf_hub_download
 from scipy.ndimage import zoom  
 
+from pathlib import Path
+import sys
+
+# Make sure Python can find your src/ package
+sys.path.append(str(Path(__file__).parent))
+
+from rag.src.config.config import Config
+from rag.src.document_ingestion.document_processor import DocumentProcessor
+from rag.src.vectorstore.vectorstore import VectorStore
+from rag.src.graph_builder.graph_builder import GraphBuilder
+
 # ----------------------------
 # Prediction Configs
 # ----------------------------
+
+@st.cache_resource
+def initialize_rag():
+    """Initialize the RAG system (cached)"""
+    try:
+        # Initialize components
+        llm = Config.get_llm()
+        doc_processor = DocumentProcessor(
+            chunk_size=Config.CHUNK_SIZE,
+            chunk_overlap=Config.CHUNK_OVERLAP
+        )
+        vector_store = VectorStore()
+        
+        # Use default URLs
+        path_dir = Config.path_dir
+        
+        # Process documents
+        documents = doc_processor.process_urls(path_dir)
+        
+        # Create vector store
+        vector_store.create_vectorstore(documents)
+        
+        # Build graph
+        graph_builder = GraphBuilder(
+            retriever=vector_store.get_retriever(),
+            llm=llm
+        )
+        graph_builder.build()
+        
+        return graph_builder, len(documents)
+    except Exception as e:
+        st.error(f"Failed to initialize: {str(e)}")
+        return None, 0
+    
 IMG_SIZE = 300
 label_mapping = {
     'AD'  : "Alzheimer's Disease",
@@ -26,7 +71,7 @@ idx_to_label = dict(enumerate(sorted(label_mapping)))
 st.set_page_config(page_title="Alzheimer detection", layout="wide")
 st.title("🧠 Alzheimer's Detection and Brain MRI Explorer")
 
-tabs = st.tabs(["🏠 Home", "🧠 MRI Viewer", "🧪 2D MRI Prediction", "🧬 Biomarker Prediction"])
+tabs = st.tabs(["🏠 Home", "🧠 MRI Viewer", "🧪 2D MRI Prediction", "🧬 Biomarker Prediction", "🔍 RAG Q&A"])
 
 
 with tabs[0]:
@@ -287,3 +332,64 @@ with tabs[3]:
     st.image("images/violin_pT217_F.png", caption="This highly specific biomarker for Alzheimer's shows increased levels in amyloid-positive individuals, supporting its diagnostic value.", width=600)
 
     st.info("🧪 This section is under development. Further statistical tests and modeling will follow.")
+with tabs[4]:
+    st.header("🔍 Ask Questions about Alzheimer case")
+    st.markdown(
+        """
+        This section uses a **RAG** over few Alzheimer related PDFs I found online.
+
+        Type a question and the system will retrieve relevant chunks and let the LLM answer,
+        along with showing the source from which it took.
+        """
+    )
+
+    rag_system, num_chunks = initialize_rag()
+
+    if rag_system is None:
+        st.warning("RAG system could not be initialized. Check logs / config.")
+        st.stop()
+
+    st.info(f"RAG system ready — using **{num_chunks} document chunks**.")
+
+    if "rag_history" not in st.session_state:
+        st.session_state.rag_history = []
+
+    question = st.text_input(
+        "Your question?: ",
+        placeholder="e.g. What are the main biomarkers used for early AD diagnosis?"
+    )
+
+    if st.button("🔍 Search in documents") and question:
+        with st.spinner("Searching and generating answer..."):
+            result = rag_system.run(question)
+
+        answer = result.get("answer", "")
+        retrieved_docs = result.get("retrieved_docs", [])
+        #hist
+        st.session_state.rag_history.append(
+            {"question": question, "answer": answer}
+        )
+
+        #answer
+        st.markdown("### 💡 Answer")
+        st.success(answer)
+
+        # sources
+        if retrieved_docs:
+            with st.expander("📄 Source document snippets"):
+                for i, doc in enumerate(retrieved_docs, 1):
+                    st.markdown(f"**Document {i}**")
+                    st.write(doc.page_content[:500] + "...")
+                    st.caption(f"Source: {getattr(doc, 'metadata', {})}")
+                    st.markdown("---")
+        else:
+            st.info("No documents were retrieved for this question.")
+
+    #Q&A
+    if st.session_state.rag_history:
+        st.markdown("### 📜 Recent RAG Questions")
+        for item in reversed(st.session_state.rag_history[-3:]):
+            st.markdown(f"**Q:** {item['question']}")
+            st.markdown(f"**A:** {item['answer'][:250]}...")
+            st.markdown("---")
+
