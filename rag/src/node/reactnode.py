@@ -1,7 +1,7 @@
 """LangGraph nodes for RAG workflow + ReAct Agent inside generate_content"""
 
 from typing import List, Optional
-from src.state.rag_state import RAGState
+from rag.src.state.rag_state import RAGState
 
 from langchain_core.documents import Document
 from langchain_core.tools import Tool
@@ -94,3 +94,4 @@ class RAGNodes:
             retrieved_docs=state.retrieved_docs,
             answer=answer or "Could not generate answer."
         )
+
