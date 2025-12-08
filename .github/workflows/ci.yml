@@ -12,6 +12,7 @@ jobs:
 
     env:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
 
     steps:
       - name: Checkout repo
@@ -31,3 +32,4 @@ jobs:
       - name: Run tests
         run: |
           pytest
+
