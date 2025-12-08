@@ -51,3 +51,8 @@ opencv-python
 tensorflow
 huggingface_hub
 scipy
+cassio
+langgraph-cli[inmem]
+langchain_tavily
+langgraph_supervisor
+langsmith
