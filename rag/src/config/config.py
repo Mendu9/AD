@@ -19,7 +19,7 @@ class Config:
     GROQ_API_KEY=st.secrets["GROQ_API_KEY"]
     # Model Configuration
     LLM_MODEL = "openai/gpt-oss-120b"
-    
+    USER_AGENT = os.getenv("USER_AGENT", "alzheimer-rag/1.0")
     # Document Processing
     CHUNK_SIZE = 1000
     CHUNK_OVERLAP = 100
@@ -28,13 +28,17 @@ class Config:
     BASE_DIR = Path(__file__).resolve().parents[2]
     DATA_DIR = BASE_DIR / "data"
     path_dir = str(DATA_DIR)
+    print("Path dir": path_dir)
     
     @classmethod
     def get_llm(cls):
         """Initialize and return the LLM model"""
         if not cls.GROQ_API_KEY:
             raise ValueError("GROQ_API_KEY is not set in environment variables.")
-        os.environ["GROQ_API_KEY"] = cls.GROQ_API_KEY
+            
+        # GROQ_API_KEY=
+        os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 
         return init_chat_model(model=cls.LLM_MODEL, model_provider="groq")
+
 
