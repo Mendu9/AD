@@ -19,7 +19,6 @@ class Config:
     GROQ_API_KEY=st.secrets["GROQ_API_KEY"]
     # Model Configuration
     LLM_MODEL = "openai/gpt-oss-120b"
-    USER_AGENT = os.getenv("USER_AGENT", "alzheimer-rag/1.0")
     # Document Processing
     CHUNK_SIZE = 1000
     CHUNK_OVERLAP = 100
@@ -40,6 +39,7 @@ class Config:
         os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 
         return init_chat_model(model=cls.LLM_MODEL, model_provider="groq")
+
 
 
 
