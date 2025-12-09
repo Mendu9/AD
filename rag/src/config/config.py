@@ -28,7 +28,7 @@ class Config:
     BASE_DIR = Path(__file__).resolve().parents[2]
     DATA_DIR = BASE_DIR / "data"
     path_dir = str(DATA_DIR)
-    print("Path dir": path_dir)
+    print("Path dir: " path_dir)
     
     @classmethod
     def get_llm(cls):
@@ -40,5 +40,6 @@ class Config:
         os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 
         return init_chat_model(model=cls.LLM_MODEL, model_provider="groq")
+
 
 
