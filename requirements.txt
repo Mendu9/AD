@@ -55,3 +55,4 @@ langgraph-cli[inmem]
 langchain_tavily
 langgraph_supervisor
 langsmith
+sentence-transformers
