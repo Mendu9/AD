@@ -22,7 +22,6 @@ faiss-cpu
 chromadb
 wikipedia
 langchain-text-splitters
-sentence-transformers
 langchain_huggingface
 duckdb
 pandas
