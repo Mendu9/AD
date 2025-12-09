@@ -4,6 +4,7 @@ import nibabel as nib
 import numpy as np
 import tempfile
 import os
+os.environ['USER_AGENT'] = 'myagent'
 import cv2
 import tensorflow as tf
 from tensorflow.keras.models import load_model
@@ -392,4 +393,5 @@ with tabs[4]:
             st.markdown(f"**Q:** {item['question']}")
             st.markdown(f"**A:** {item['answer'][:250]}...")
             st.markdown("---")
+
 
