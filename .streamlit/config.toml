@@ -1,2 +1,3 @@
 [server]
 maxMessageSize = 300
+fileWatcherType = "none"
