@@ -14,7 +14,7 @@ load_dotenv()
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
 from langchain_tavily import TavilySearch
-TAVILY_API_KEY=os.getenv("TAVILY_API_KEY")
+TAVILY_API_KEY=st.secrets["TAVILY_API_KEY"]
 
 
 class RAGNodes:
@@ -94,5 +94,6 @@ class RAGNodes:
             retrieved_docs=state.retrieved_docs,
             answer=answer or "Could not generate answer."
         )
+
 
 
