@@ -13,7 +13,7 @@ class Config:
     
     # API Keys
     #OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    HF_TOKEN=os.getenv("HF_TOKEN")
+    # HF_TOKEN=os.getenv("HF_TOKEN")
     GROQ_API_KEY=os.getenv("GROQ_API_KEY")
     # Model Configuration
     LLM_MODEL = "openai/gpt-oss-120b"
@@ -33,4 +33,5 @@ class Config:
         if not cls.GROQ_API_KEY:
             raise ValueError("GROQ_API_KEY is not set in environment variables.")
         os.environ["GROQ_API_KEY"] = cls.GROQ_API_KEY
+
         return init_chat_model(model=cls.LLM_MODEL, model_provider="groq")
