@@ -19,3 +19,4 @@ wikipedia
 langchain_tavily
 langchain_huggingface
 arxiv
+scipy
