@@ -11,7 +11,7 @@ class VectorStore:
     
     def __init__(self):
         """Initialize vector store with embeddings"""
-        HF_TOKEN=st.secrets("HF_TOKEN")
+        HF_TOKEN=st.secrets["HF_TOKEN"]
         self.embedding = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         self.vectorstore = None
         self.retriever = None
@@ -52,3 +52,4 @@ class VectorStore:
             raise ValueError("Vector store not initialized. Call create_vectorstore first.")
 
         return self.retriever.invoke(query)
+
