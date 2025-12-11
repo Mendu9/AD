@@ -18,7 +18,7 @@ streamlit
 wikipedia
 langchain_tavily
 langchain-huggingface
-# sentence-transformers
+sentence-transformers
 arxiv
 scipy
 langchain_groq
