@@ -1,8 +1,8 @@
 """Graph builder for LangGraph workflow"""
 
 from langgraph.graph import StateGraph, END
-from rag.src.state.rag_state import RAGState
-from rag.src.node.reactnode import RAGNodes
+from src.state.rag_state import RAGState
+from src.node.reactnode import RAGNodes
 
 class GraphBuilder:
     """Builds and manages the LangGraph workflow"""
@@ -57,5 +57,4 @@ class GraphBuilder:
             self.build()
         
         initial_state = RAGState(question=question)
-
         return self.graph.invoke(initial_state)

@@ -1,5 +1,5 @@
 """Vector store module for document embedding and retrieval"""
-import streamlit as st
+
 from typing import List
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
@@ -10,8 +10,7 @@ class VectorStore:
     """Manages vector store operations"""
     
     def __init__(self):
-        """Initialize vector store with embeddings"""
-        HF_TOKEN=st.secrets["HF_TOKEN"]
+        """Initialize vector store with OpenAI embeddings"""
         self.embedding = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         self.vectorstore = None
         self.retriever = None
@@ -50,6 +49,4 @@ class VectorStore:
         """
         if self.retriever is None:
             raise ValueError("Vector store not initialized. Call create_vectorstore first.")
-
         return self.retriever.invoke(query)
-

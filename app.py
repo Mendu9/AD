@@ -4,63 +4,26 @@ import nibabel as nib
 import numpy as np
 import tempfile
 import os
-os.environ['USER_AGENT'] = 'myagent'
 import cv2
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.efficientnet import preprocess_input as eff_preprocess
 from huggingface_hub import hf_hub_download
-from scipy.ndimage import zoom  
+from scipy.ndimage import zoom
 
+# ---------- NEW IMPORTS FOR RAG ----------
 from pathlib import Path
 import sys
+import time
 
-# Make sure Python can find your src/ package
-ROOT_DIR = Path(__file__).resolve().parent  # folder containing app.py
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
-from rag.src.config.config import Config
-from rag.src.document_ingestion.document_processor import DocumentProcessor
-from rag.src.vectorstore.vectorstore import VectorStore
-from rag.src.graph_builder.graph_builder import GraphBuilder
+sys.path.append(str(Path(__file__).parent / "rag"))
 
-# ----------------------------
-# Prediction Configs
-# ----------------------------
+from src.config.config import Config
+from src.document_ingestion.document_processor import DocumentProcessor
+from src.vectorstore.vectorstore import VectorStore
+from src.graph_builder.graph_builder import GraphBuilder
+# -----------------------------------------
 
-@st.cache_resource
-def initialize_rag():
-    """Initialize the RAG system (cached)"""
-    try:
-        # Initialize components
-        llm = Config.get_llm()
-        doc_processor = DocumentProcessor(
-            chunk_size=Config.CHUNK_SIZE,
-            chunk_overlap=Config.CHUNK_OVERLAP
-        )
-        vector_store = VectorStore()
-        
-        # Use default URLs
-        path_dir = Config.path_dir
-        
-        # Process documents
-        documents = doc_processor.process_urls(path_dir)
-        
-        # Create vector store
-        vector_store.create_vectorstore(documents)
-        
-        # Build graph
-        graph_builder = GraphBuilder(
-            retriever=vector_store.get_retriever(),
-            llm=llm
-        )
-        graph_builder.build()
-        
-        return graph_builder, len(documents)
-    except Exception as e:
-        st.error(f"Failed to initialize: {str(e)}")
-        return None, 0
-    
 IMG_SIZE = 300
 label_mapping = {
     'AD'  : "Alzheimer's Disease",
@@ -70,16 +33,79 @@ label_mapping = {
 }
 idx_to_label = dict(enumerate(sorted(label_mapping)))
 
-st.set_page_config(page_title="Alzheimer detection", layout="wide")
-st.title("🧠 Alzheimer's Detection and Brain MRI Explorer")
+# Global page config (only once)
+st.set_page_config(page_title="Alzheimer's MRI & RAG Explorer", layout="wide")
+st.title("🧠 Alzheimer's Detection, Biomarkers & RAG Explorer")
+st.markdown("Developed by **Sai Arun Mendu**", unsafe_allow_html=True)
 
-tabs = st.tabs(["🏠 Home", "🧠 MRI Viewer", "🧪 2D MRI Prediction", "🧬 Biomarker Prediction", "🔍 RAG Q&A"])
+# ---------- RAG SESSION + INITIALIZATION HELPERS ----------
+def init_session_state():
+    """Initialize session state variables for RAG."""
+    if 'rag_system' not in st.session_state:
+        st.session_state.rag_system = None
+    if 'rag_initialized' not in st.session_state:
+        st.session_state.rag_initialized = False
+    if 'rag_history' not in st.session_state:
+        st.session_state.rag_history = []
 
+@st.cache_resource
+def initialize_rag():
+    """Initialize the RAG system (cached)."""
+    try:
+        llm = Config.get_llm()
+        doc_processor = DocumentProcessor(
+            chunk_size=Config.CHUNK_SIZE,
+            chunk_overlap=Config.CHUNK_OVERLAP
+        )
+        vector_store = VectorStore()
 
+        # Uses Config.path_dir just like in streamlit_app.py
+        path_dir = Config.path_dir
+
+        # Process documents and create vector store
+        documents = doc_processor.process_urls(path_dir)
+        vector_store.create_vectorstore(documents)
+
+        # Build the LangGraph graph
+        graph_builder = GraphBuilder(
+            retriever=vector_store.get_retriever(),
+            llm=llm
+        )
+        graph_builder.build()
+
+        return graph_builder, len(documents)
+    except Exception as e:
+        st.error(f"Failed to initialize RAG system: {str(e)}")
+        return None, 0
+
+# Initialize RAG-related session keys at startup
+init_session_state()
+
+# ---------- SIMPLE CSS FOR RAG BUTTONS ----------
+st.markdown("""
+    <style>
+    .stButton > button {
+        font-weight: 600;
+    }
+    </style>
+""", unsafe_allow_html=True)
+# ------------------------------------------------
+
+# Tabs – add a new tab for RAG at the end
+tabs = st.tabs([
+    "🏠 Home",
+    "🧠 MRI Viewer",
+    "🧪 2D MRI Prediction",
+    "🧬 Biomarker Prediction",
+    "🤖 RAG Q&A (Documents)"
+])
+
+# ------------------------ TAB 0: HOME ------------------------
 with tabs[0]:
     st.markdown("""
     ## 🧠 Understanding Alzheimer's Disease
-    Alzheimer's disease (AD) is a progressive neurological disorder that leads to memory loss, confusion, and behavioral changes. It is the most common cause of dementia, affecting millions worldwide.
+    Alzheimer's disease (AD) is a progressive neurological disorder that leads to memory loss,
+    confusion, and behavioral changes. It is the most common cause of dementia, affecting millions worldwide.
 
     ### 🧩 Symptoms of Alzheimer's:
     - Memory loss that disrupts daily life
@@ -99,13 +125,18 @@ with tabs[0]:
     - Loss of synapses and neurons
     """)
 
-    st.image("images/normalVsAD.jpg", caption="Comparison of Healthy Brain and Alzheimer's Disease Brain",width=500)
+    st.image(
+        "images/normalVsAD.jpg",
+        caption="Comparison of Healthy Brain and Alzheimer's Disease Brain",
+        width=500
+    )
 
     st.markdown("""
     ### 🧪 What This App Offers
     - 🧬 **MRI Visualization**: Interactively browse 3D brain scans using the .nii file.
-    - 📊 **2D MRI Prediction**: Classify stages of Alzheimer’s from single MRI slice
-    - 💡 **Biomarker Analysis** *in progress*
+    - 📊 **2D MRI Prediction**: Classify stages of Alzheimer’s from a single MRI slice.
+    - 💡 **Biomarker Analysis**: Visual summaries of CSF & plasma markers.
+    - 🤖 **RAG Q&A**: Ask questions over Alzheimer-related PDFs / docs (LangGraph RAG).
 
     ### 📚 Research Insight
     [Biomarker Focus & Brain Changes in Alzheimer's](https://adni.bitbucket.io/reference/docs/UPENNBIOMK9/ADNI%20METHODS%20doc%20for%20Roche%20Elecsys%20CSF%20immunoassays%20vfinal.pdf)
@@ -113,10 +144,12 @@ with tabs[0]:
     [Glial Fibrillary Acidic Protein (GFAP) in Plasma vs. CSF](https://pmc.ncbi.nlm.nih.gov/articles/PMC8524356/)
 
     ---
-    💡 *This is a project combining deep learning with interactive MRI exploration to support early detection and awareness of Alzheimer’s disease.*
+    💡 *This is a project combining deep learning, biomarkers and retrieval-augmented generation
+    to support early detection and better understanding of Alzheimer’s disease.*
     """)
     st.markdown("Developed by **Sai Arun Mendu**", unsafe_allow_html=True)
 
+# --------------------- TAB 1: MRI VIEWER ---------------------
 with tabs[1]:
     st.header("📤 Upload Brain MRI File (.nii/.nii.gz)")
     file = st.file_uploader("Upload a NIfTI file", type=["nii", "gz"])
@@ -334,65 +367,102 @@ with tabs[3]:
     st.image("images/violin_pT217_F.png", caption="This highly specific biomarker for Alzheimer's shows increased levels in amyloid-positive individuals, supporting its diagnostic value.", width=600)
 
     st.info("🧪 This section is under development. Further statistical tests and modeling will follow.")
+
+# ---------------- TAB 4: RAG Q&A (DOCUMENTS) -----------------
 with tabs[4]:
-    st.header("🔍 Ask Questions about Alzheimer case")
-    st.markdown(
-        """
+    st.header("🤖 RAG Q&A over Alzheimer Documents")
+    st.markdown("""
         This section uses a **RAG** over few Alzheimer related PDFs I found online.
 
-        Type a question and the system will retrieve relevant chunks and let the LLM answer,
-        along with showing the source from which it took.
-        """
-    )
+        Type a question, system will retrieve, and LLM answer, alongside the source it gathered from.
+        """)
 
-    rag_system, num_chunks = initialize_rag()
+    # Initialize system (only once per session)
+    if not st.session_state.rag_initialized:
+        with st.spinner("Initializing RAG system"):
+            rag_system, num_chunks = initialize_rag()
+            if rag_system:
+                st.session_state.rag_system = rag_system
+                st.session_state.rag_initialized = True
+                st.success(f"RAG ready! ({num_chunks} document chunks loaded)")
+            else:
+                st.stop()
 
-    if rag_system is None:
-        st.warning("RAG system could not be initialized. Check logs / config.")
-        st.stop()
+    st.markdown("---")
 
-    st.info(f"RAG system ready — using **{num_chunks} document chunks**.")
-
-    if "rag_history" not in st.session_state:
-        st.session_state.rag_history = []
-
-    question = st.text_input(
-        "Your question?: ",
-        placeholder="e.g. What are the main biomarkers used for early AD diagnosis?"
-    )
-
-    if st.button("🔍 Search in documents") and question:
-        with st.spinner("Searching and generating answer..."):
-            result = rag_system.run(question)
-
-        answer = result.get("answer", "")
-        retrieved_docs = result.get("retrieved_docs", [])
-        #hist
-        st.session_state.rag_history.append(
-            {"question": question, "answer": answer}
+    with st.form("rag_search_form"):
+        question = st.text_input(
+            "Ask a question related to Alzheimers prefereably:",
+            placeholder="e.g., What biomarkers are most predictive of amyloid positivity?"
         )
+        submit = st.form_submit_button("🔍 Search")
 
-        #answer
-        st.markdown("### 💡 Answer")
-        st.success(answer)
+    if submit and question:
+        if st.session_state.rag_system:
+            with st.spinner("Running retrieval and generation…"):
+                start_time = time.time()
+                result = st.session_state.rag_system.run(question)
+                elapsed_time = time.time() - start_time
 
-        # sources
-        if retrieved_docs:
-            with st.expander("📄 Source document snippets"):
-                for i, doc in enumerate(retrieved_docs, 1):
-                    st.markdown(f"**Document {i}**")
-                    st.write(doc.page_content[:500] + "...")
-                    st.caption(f"Source: {getattr(doc, 'metadata', {})}")
-                    st.markdown("---")
-        else:
-            st.info("No documents were retrieved for this question.")
+                st.session_state.rag_history.append({
+                    'question': question,
+                    'answer': result.get('answer', ''),
+                    'time': elapsed_time
+                })
 
-    #Q&A
+                st.markdown("### 💡 Answer")
+                st.success(result.get('answer', 'No answer returned.'))
+
+                # with st.expander("📄 Source Documents"):
+                #     local_docs = result.get("retrieved_docs", [])
+                #     tool_sources = result.get("tool_sources", [])
+
+                #     if local_docs:
+                #         st.markdown(" Alzheimer PDFs")
+                #         for i, doc in enumerate(local_docs, 1):
+                #             meta = getattr(doc, "metadata", {}) or {}
+                #             title = meta.get("title") or meta.get("source") or f"Chunk {i}"
+                #             st.markdown(f"**{i}. {title}**")
+                #             st.text_area(
+                #                 f"Local document {i}",
+                #                 (doc.page_content[:500] + "…")
+                #                 if hasattr(doc, "page_content")
+                #                 else str(doc)[:500] + "…",
+                #                 height=120,
+                #                 disabled=True,
+                #             )
+                #             st.markdown("---")
+
+                #     if tool_sources:
+                #         st.markdown(" External Sources")
+                #         for j, src in enumerate(tool_sources, 1):
+                #             tool_name = src.get("tool", "tool")
+                #             source_type = src.get("source_type", "external")
+                #             query = src.get("query", "")
+                #             snippet = src.get("snippet", "")
+
+                #             st.markdown(
+                #                 f"**{j}. {tool_name}**  "
+                #                 f"_(type: `{source_type}`, query: `{query}`)_"
+                #             )
+                #             st.text_area(
+                #                 f"External source {j}",
+                #                 snippet,
+                #                 height=120,
+                #                 disabled=True,
+                #             )
+                #             st.markdown("---")
+
+                #     if not local_docs and not tool_sources:
+                #         st.info("No sources found for this answer.")
+
+                st.caption(f"⏱️ Response time: {elapsed_time:.2f} seconds")
+
     if st.session_state.rag_history:
-        st.markdown("### 📜 Recent RAG Questions")
+        st.markdown("---")
+        st.markdown("### 📜 Recent RAG Searches")
         for item in reversed(st.session_state.rag_history[-3:]):
             st.markdown(f"**Q:** {item['question']}")
             st.markdown(f"**A:** {item['answer'][:250]}...")
-            st.markdown("---")
-
-
+            st.caption(f"Time: {item['time']:.2f}s")
+            st.markdown("")
