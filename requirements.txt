@@ -3,7 +3,6 @@ nibabel
 numpy
 opencv-python
 tensorflow
-tf-keras==2.20.1
 huggingface_hub
 langchain
 langchain-community
@@ -17,9 +16,9 @@ beautifulsoup4
 requests
 streamlit
 wikipedia
-langchain_tavily
+langchain-tavily
 langchain-huggingface
-sentence-transformers==5.1.2
+sentence-transformers
 arxiv
 scipy
 langchain_groq
