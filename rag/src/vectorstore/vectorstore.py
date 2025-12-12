@@ -1,23 +1,20 @@
-"""Vector store module for document embedding and retrieval"""
-
+"""Vector store for document embedding and retrieval"""
 from typing import List
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.schema import Document
-
 class VectorStore:
-    """Manages vector store operations"""
+    """manages vector store operations"""
     
     def __init__(self):
-        """Initialize vector store with OpenAI embeddings"""
+        """Initialize vector store with Hugging face embeddings"""
         self.embedding = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         self.vectorstore = None
         self.retriever = None
     
     def create_vectorstore(self, documents: List[Document]):
         """
-        Create vector store from documents
-        
+        create vector store from documents
         Args:
             documents: List of documents to embed
         """
@@ -38,11 +35,9 @@ class VectorStore:
     def retrieve(self, query: str, k: int = 4) -> List[Document]:
         """
         Retrieve relevant documents for a query
-        
         Args:
             query: Search query
             k: Number of documents to retrieve
-            
         Returns:
             List of relevant documents
         """

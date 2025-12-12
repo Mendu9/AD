@@ -10,8 +10,6 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.efficientnet import preprocess_input as eff_preprocess
 from huggingface_hub import hf_hub_download
 from scipy.ndimage import zoom
-
-# ---------- NEW IMPORTS FOR RAG ----------
 from pathlib import Path
 import sys
 import time
@@ -22,7 +20,6 @@ from src.config.config import Config
 from src.document_ingestion.document_processor import DocumentProcessor
 from src.vectorstore.vectorstore import VectorStore
 from src.graph_builder.graph_builder import GraphBuilder
-# -----------------------------------------
 
 IMG_SIZE = 300
 label_mapping = {
@@ -33,12 +30,11 @@ label_mapping = {
 }
 idx_to_label = dict(enumerate(sorted(label_mapping)))
 
-# Global page config (only once)
 st.set_page_config(page_title="Alzheimer's MRI & RAG Explorer", layout="wide")
 st.title("🧠 Alzheimer's Detection, Biomarkers & RAG Explorer")
 st.markdown("Developed by **Sai Arun Mendu**", unsafe_allow_html=True)
 
-# ---------- RAG SESSION + INITIALIZATION HELPERS ----------
+#RAG
 def init_session_state():
     """Initialize session state variables for RAG."""
     if 'rag_system' not in st.session_state:
@@ -59,14 +55,12 @@ def initialize_rag():
         )
         vector_store = VectorStore()
 
-        # Uses Config.path_dir just like in streamlit_app.py
         path_dir = Config.path_dir
 
-        # Process documents and create vector store
         documents = doc_processor.process_urls(path_dir)
         vector_store.create_vectorstore(documents)
 
-        # Build the LangGraph graph
+        # LangGraph 
         graph_builder = GraphBuilder(
             retriever=vector_store.get_retriever(),
             llm=llm
@@ -78,10 +72,9 @@ def initialize_rag():
         st.error(f"Failed to initialize RAG system: {str(e)}")
         return None, 0
 
-# Initialize RAG-related session keys at startup
+# Initialize RAG
 init_session_state()
 
-# ---------- SIMPLE CSS FOR RAG BUTTONS ----------
 st.markdown("""
     <style>
     .stButton > button {
@@ -89,9 +82,6 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-# ------------------------------------------------
-
-# Tabs – add a new tab for RAG at the end
 tabs = st.tabs([
     "🏠 Home",
     "🧠 MRI Viewer",
@@ -100,7 +90,6 @@ tabs = st.tabs([
     "🤖 RAG Q&A (Documents)"
 ])
 
-# ------------------------ TAB 0: HOME ------------------------
 with tabs[0]:
     st.markdown("""
     ## 🧠 Understanding Alzheimer's Disease
@@ -149,7 +138,6 @@ with tabs[0]:
     """)
     st.markdown("Developed by **Sai Arun Mendu**", unsafe_allow_html=True)
 
-# --------------------- TAB 1: MRI VIEWER ---------------------
 with tabs[1]:
     st.header("📤 Upload Brain MRI File (.nii/.nii.gz)")
     file = st.file_uploader("Upload a NIfTI file", type=["nii", "gz"])
@@ -368,16 +356,18 @@ with tabs[3]:
 
     st.info("🧪 This section is under development. Further statistical tests and modeling will follow.")
 
-# ---------------- TAB 4: RAG Q&A (DOCUMENTS) -----------------
+#RAG 
 with tabs[4]:
     st.header("🤖 RAG Q&A over Alzheimer Documents")
     st.markdown("""
         This section uses a **RAG** over few Alzheimer related PDFs I found online.
 
-        Type a question, system will retrieve, and LLM answer, alongside the source it gathered from.
+        Type a question, system will retrieve, and LLM answer.
+        *** This is a ReAct based system, as still project is still under development will include the graphRAG with multiagent alongside supervisors for domain specific. 
+        
         """)
 
-    # Initialize system (only once per session)
+    # Initialize rag
     if not st.session_state.rag_initialized:
         with st.spinner("Initializing RAG system"):
             rag_system, num_chunks = initialize_rag()

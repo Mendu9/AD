@@ -9,19 +9,13 @@ load_dotenv()
 
 class Config:
     """Configuration class for RAG system"""
-    
-    # API Keys
-    #OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     HF_TOKEN=os.getenv("HF_TOKEN")
     GROQ_API_KEY=os.getenv("GROQ_API_KEY")
-    # Model Configuration
     LLM_MODEL = "openai/gpt-oss-120b"
-    
-    # Document Processing
+
     CHUNK_SIZE = 1000
     CHUNK_OVERLAP = 100
-    
-    # Default URLs
+
     path_dir = ["rag/data"]
     
     @classmethod
