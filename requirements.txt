@@ -29,3 +29,4 @@ pymupdf
 chromadb
 wikipedia
 langchain-text-splitters
+xmltodict
