@@ -23,3 +23,9 @@ arxiv
 scipy
 langchain_groq==0.3.8
 tf-keras==2.20.1
+pypdf
+bs4
+pymupdf
+chromadb
+wikipedia
+langchain-text-splitters
