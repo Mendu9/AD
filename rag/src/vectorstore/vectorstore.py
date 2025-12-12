@@ -2,7 +2,6 @@
 
 from typing import List
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.schema import Document
 
@@ -49,4 +48,5 @@ class VectorStore:
         """
         if self.retriever is None:
             raise ValueError("Vector store not initialized. Call create_vectorstore first.")
+
         return self.retriever.invoke(query)
