@@ -6,15 +6,14 @@ A project that combines:
 - **Biomarker exploration** CSF + plasma markers from ADNI analyses
 - **RAG Q&A over Alzheimer related documents** using LangChain + LangGraph + FAISS
   
-> This project is still under development will include better RAG strategies adaptive retrieval, validation, and domain-specific routing.
+> This project is still under development will include better RAG strategies adaptive retrieval, validation, and domain specific routing.
 
 ## Features
 
-### 1) 3D MRI Viewer (NIfTI)
+### 1) 3D MRI Viewe
 Upload a brain MRI scan (`.nii` / `.nii.gz`) and explore it interactively using Plotly ( I have given a  folder where you can access few files):
 - Axial / Coronal / Sagittal views
-- Slice-by-slice animation + slider
-- Downsampling for lower memory usage (`zoom(..., 0.5)`)
+- Slice by slice animation + slider
 
 ### 2) 2D MRI Prediction
 Upload a single **2D MRI slice** (`.png/.jpg`) and get :
@@ -24,7 +23,7 @@ Upload a single **2D MRI slice** (`.png/.jpg`) and get :
 - **EMCI**: Early Mild Cognitive Impairment  
 - **LMCI**: Late Mild Cognitive Impairment  
 - **AD**: Alzheimer’s Disease  
-- Per-class confidence scores
+- Per class confidence scores
 ( I have given a  folder where you can access few files)
 
 ### 3) Biomarker Prediction (In Progress)
